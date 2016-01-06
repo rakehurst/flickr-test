@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+
+<head>
+    <style>
+    #flickr-stream {
+        width: 940px;
+        margin: 0 auto;
+    }
+    
+    img {
+        width: 30%;
+        margin: 1.5%;
+    }
+    
+    .selected {
+        outline: 4px dashed red;
+    }
+    </style>
+    <script type="text/javascript">
+    function cb(data,selected) {
+
+        for (var i = 0; i < data.items.length; i++) {
+            var item = data.items[i];
+            var img = document.createElement('img');
+            img.setAttribute('src', item.media.m);
+            if (selected) {
+            	img.className = 'selected';
+            }
+            document.getElementById('flickr-stream').insertBefore(img,document.getElementById('flickr-stream').childNodes[0]);
+        }
+    }
+
+    var tags = 'london';
+
+    var script = document.createElement('script');
+
+    script.src = 'http://api.flickr.com/services/feeds/photos_public.gne?format=json&jsoncallback=cb&tags = ' + tags;
+
+    document.head.appendChild(script);
+
+    function selectedImg() {
+        if (this.className == 'selected') {
+            this.className = '';
+        } else {
+            this.className = 'selected';
+        }
+        var selectedimages = document.getElementsByClassName('selected');
+        var items = [];
+        for (var i = 0; i < selectedimages.length; i++) {
+        	items.push({"media": {"m":selectedimages[i].src}})
+        }
+        var selectedImages = {"items": items};
+
+        createCookie("selectedImages", JSON.stringify(selectedImages));
+    }
+
+    function createCookie(name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toGMTString();
+        } else var expires = "";
+        document.cookie = name + "=" + value + expires + "; path=/";
+    }
+
+    function readCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    window.onload = function() {
+        var selectedimages = JSON.parse(readCookie("selectedImages"));
+        if (typeof(selectedimages) !== "undefined" && selectedimages !== null) {
+	        cb(selectedimages,true);
+	    }
+        var images = document.getElementsByTagName('img')
+
+        for (var i = 0; i < images.length; i++) {
+            var image = images[i];
+            image.addEventListener('click', selectedImg);
+        }
+    }
+    </script>
+</head>
+
+<body>
+    <div id="flickr-stream"></div>
+</body>
+
+</html>
